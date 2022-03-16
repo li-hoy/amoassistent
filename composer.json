@@ -1,0 +1,24 @@
+{
+    "name": "lihoy/amoassistent",
+    "description": "Tools",
+    "homepage": "https://github.com/li-hoy/amoassistent",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pavel Likhosherst",
+            "email": "pe@likhosherst.ru",
+            "role": "Creator"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "ufee/amoapi": "^0.9.2.8",
+        "ufee/sqlite3": "^1.0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lihoy\\Amo\\": "/"
+        }
+    }
+}

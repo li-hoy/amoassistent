@@ -17,7 +17,7 @@ class Assistent
 
     public function __construct(
         object $amoClient,
-        string $stroragePath = ""
+        string $storagePath = ""
     ) {
         // set amo client
         if ($amoClient instanceof AmoClient) {
@@ -27,8 +27,8 @@ class Assistent
         }
 
         // set storage
-        if (false === empty($stroragePath)) {
-            $this->setStorage($stroragePath);
+        if (false === empty($storagePath)) {
+            $this->setStorage($storagePath);
         }
         $this->storage_default_key = 'cache';
     }

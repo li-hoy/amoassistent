@@ -3,7 +3,7 @@
  * Some tools for automating typical tasks when working with the ufee/amoapi library
  */
 
- namespace Lihoy\Amo\Assistent;
+ namespace Lihoy\Amo;
 
 use \Ufee\Amo\Oauthapi as AmoClient;
 use \Ufee\Amo\Services\Account as AmoAccount;

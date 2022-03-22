@@ -13,22 +13,23 @@ class Assistent
     private
         $amo_client,
         $storage,
+        $storage_path,
         $storage_default_key;
 
     public function __construct(
         object $amoClient,
-        string $storagePath = ""
+        string $storagePath
     ) {
+        if (empty($storagePath)) {
+            throw new \Exception("Storage path is empty.");
+        }
+        $this->storage_path = $storagePath;
+        $this->setStorage($this->storage_path);
         // set amo client
         if ($amoClient instanceof AmoClient) {
             $this->amo_client = $amoClient;
         } else {
             $this->setAmoClient($amoClient);
-        }
-
-        // set storage
-        if (false === empty($storagePath)) {
-            $this->setStorage($storagePath);
         }
         $this->storage_default_key = 'cache';
     }
@@ -65,9 +66,9 @@ class Assistent
     /**
      * puts data into storage in json format
      * 
-     * @param data
-     * @param path
-     * @return void
+     * @param mixed data
+     * @param string path
+     * @return bool
      */
     public function saveToStorage(
         $data,
@@ -94,6 +95,7 @@ class Assistent
     {
         $subfolderList = [];
         $subfolderLine = "";
+
         if (false === empty($path)) {
             throw new \Exception("Path is empty.");
         }
@@ -116,7 +118,7 @@ class Assistent
             }
             $dir = $dir . "/";
         }
-        $this->sorage = $fm;
+        $this->storage = $fm;
     }
 
     public function getCusomFieldValues($cf)
@@ -177,16 +179,15 @@ class Assistent
     public function setAmoClient(
         object $config
     ) {
-        if (empty($name)) {
-            throw new \Exception("Argument 'name' is empty");
-        }
         $client = AmoClient::setInstance($config->oauth);
         $client->queries->logs($config->log_queries ?? false);
-        $client->queries->setDelay($config->queries_delay ?? 0.15);
-        $client->setOauthPath($config->oauth_storage ?? (self::$storage_path . '/Oauth'));
+        $client->queries->setDelay($config->query_delay ?? 0.15);
+        $client->setOauthPath(
+            $config->oauth_storage ?? (self::$storage_path . '/Oauth')
+        );
         AmoAccount::setCacheTime($config->account_cache_time ?? 1800);
-        self::$amo_clients[$name] = $client;
-        return self::$amo_clients[$name];
+        self::$amo_client = $client;
+        return self::$amo_client;
     }
 
     /**

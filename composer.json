@@ -13,8 +13,8 @@
     ],
     "require": {
         "php": ">=7.2",
-        "ufee/amoapi": "^0.9.2.8",
-        "ufee/sqlite3": "^1.0.1"
+        "ufee/amoapi": "~0.9.2.8",
+        "ufee/sqlite3": "~1.0.1"
     },
     "autoload": {
         "psr-4": {

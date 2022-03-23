@@ -3,7 +3,7 @@
  * Some tools for automating typical tasks when working with the ufee/amoapi library
  */
 
- namespace Lihoy\Amo;
+namespace Lihoy\Amo;
 
 use \Ufee\Amo\Oauthapi as AmoClient;
 use \Ufee\Amo\Services\Account as AmoAccount;
@@ -96,13 +96,13 @@ class Assistent
         $subfolderList = [];
         $subfolderLine = "";
 
-        if (false === empty($path)) {
+        if (empty($path)) {
             throw new \Exception("Path is empty.");
         }
-        $pattern = '/^\/(([a-z\d\/]+)\/)?([a-z\d\._]*?)$/i';
+        $pattern = '/^\/(([a-z\d\/]+)\/)?([a-z\d\._-]*?)$/i';
         $matches = [];
         $path_validated = preg_match($pattern, $path, $matches);
-        if (false === $path_validated) {
+        if ($path_validated !== 1) {
             throw new \Exception(
                 "Wrong path (validation pattern: " . addslashes($pattern) . ")."
             );
@@ -111,12 +111,11 @@ class Assistent
         $subfolderList = explode('/', $subfolderLine);
         $dir = "/";
         foreach ($subfolderList as $subfolder) {
-            $dir = $dir . "$subfolder";
+            $dir = $dir . "$subfolder" . '/';
             $fm = fileManager($dir);
             if (false === $fm->exists()) {
                 $fm->createDir('', 0700);
             }
-            $dir = $dir . "/";
         }
         $this->storage = $fm;
     }
@@ -186,8 +185,8 @@ class Assistent
             $config->oauth_storage ?? (self::$storage_path . '/Oauth')
         );
         AmoAccount::setCacheTime($config->account_cache_time ?? 1800);
-        self::$amo_client = $client;
-        return self::$amo_client;
+        $this->amo_client = $client;
+        return $this->amo_client;
     }
 
     /**

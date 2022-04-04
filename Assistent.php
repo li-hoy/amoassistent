@@ -18,9 +18,10 @@ class Assistent
         $storage_default_key;
 
     public function __construct(
-        object $amoClient,
+        $amoClient,
         string $storagePath
     ) {
+        $this->storage_default_key = 'cache';
         if (empty($storagePath)) {
             throw new Exception("Storage path is empty.");
         }
@@ -29,10 +30,13 @@ class Assistent
         // set amo client
         if ($amoClient instanceof AmoClient) {
             $this->amo_client = $amoClient;
-        } else {
+            return;
+        } 
+        if (gettype($amoClient) === "array") {
             $this->setAmoClient($amoClient);
+        } else {
+            throw new Exception("Wrong type of 'amoClient' argument.");
         }
-        $this->storage_default_key = 'cache';
     }
 
     public function getAmoClient()

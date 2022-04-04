@@ -5,8 +5,9 @@
 
 namespace Lihoy\Amo;
 
-use \Ufee\Amo\Oauthapi as AmoClient;
-use \Ufee\Amo\Services\Account as AmoAccount;
+use Exception;
+use Ufee\Amo\Oauthapi as AmoClient;
+use Ufee\Amo\Services\Account as AmoAccount;
 
 class Assistent
 {
@@ -21,7 +22,7 @@ class Assistent
         string $storagePath
     ) {
         if (empty($storagePath)) {
-            throw new \Exception("Storage path is empty.");
+            throw new Exception("Storage path is empty.");
         }
         $this->storage_path = $storagePath;
         $this->setStorage($this->storage_path);
@@ -60,7 +61,7 @@ class Assistent
             $fileContent = \json_decode($fileContent, $associative);
             return $fileContent;
         }
-        throw new \Exception("Storage '$key' doesn't exist.");
+        throw new Exception("Storage '$key' doesn't exist.");
     }
 
     /**
@@ -80,7 +81,7 @@ class Assistent
         }
         $json = json_encode($data);
         if ($checkJson && is_null(json_decode($data))) {
-            throw new \Exception('Wrong json.');
+            throw new Exception('Wrong json.');
         }
         $fm = $this->stoarage;
         $fileName = $key . ".json";
@@ -97,13 +98,13 @@ class Assistent
         $subfolderLine = "";
 
         if (empty($path)) {
-            throw new \Exception("Path is empty.");
+            throw new Exception("Path is empty.");
         }
         $pattern = '/^\/(([a-z\d\/]+)\/)?([a-z\d\._-]*?)$/i';
         $matches = [];
         $path_validated = preg_match($pattern, $path, $matches);
         if ($path_validated !== 1) {
-            throw new \Exception(
+            throw new Exception(
                 "Wrong path (validation pattern: " . addslashes($pattern) . ")."
             );
         }
@@ -131,7 +132,9 @@ class Assistent
      * @param customFieldName - string
 	 * @return mixed - custom Field Value or false if it does not exist
 	 */
-    public function getCustomField($entity = null, $customFieldName = '')
+    public function getCustomField(
+        \Ufee\Amo\Base\Models\ModelWithCF $entity = null,
+        string $customFieldName = '')
     {
         if (
             !empty($entity)
@@ -141,10 +144,10 @@ class Assistent
                 $customFieldValue = $entity->cf($customFieldName)->getValue();
                 return empty($customFieldValue) ? "" : $customFieldValue;
             } else {
-                throw new \Exception("Custom field \"$customFieldName\" doesт`t exist.");
+                throw new Exception("Custom field \"$customFieldName\" doesт`t exist.");
             }
         }
-        throw new \Exception("Wrong params");
+        throw new Exception("Wrong params");
     }
     
     public function getEntityCategoryByType($entityType)
@@ -172,19 +175,19 @@ class Assistent
     }
     
     /**
-     * @param confirg
+     * @param array confirg
      * @return \Ufee\Amo\Oauthapi
      */
     public function setAmoClient(
-        object $config
+        array $config
     ) {
-        $client = AmoClient::setInstance($config->oauth);
-        $client->queries->logs($config->log_queries ?? false);
-        $client->queries->setDelay($config->query_delay ?? 0.15);
+        $client = AmoClient::setInstance($config);
+        $client->queries->logs($config['log_queries'] ?? false);
+        $client->queries->setDelay($config['query_delay'] ?? 0.5);
         $client->setOauthPath(
-            $config->oauth_storage ?? (self::$storage_path . '/Oauth')
+            $config['oauth_storage'] ?? (self::$storage_path . '/Oauth')
         );
-        AmoAccount::setCacheTime($config->account_cache_time ?? 1800);
+        AmoAccount::setCacheTime($config['account_cache_time'] ?? 1800);
         $this->amo_client = $client;
         return $this->amo_client;
     }
@@ -194,31 +197,34 @@ class Assistent
 	 * @return boolean
 	 */
     public function setCustomField(
-        $entity = null,
-        $name = "",
-        $value = "",
-        $type = 'text'
+        \Ufee\Amo\Base\Models\ModelWithCF $entity,
+        string $name,
+        string $value,
+        string $type = 'text'
     ) {
-        if (
-            (!empty($entity) && !empty($name) && !empty($value))
-            && $entity->cf($name)
-        ) {
-            switch ($type) {
-                case 'date':
-                    $entity->cf($name)->setDate($value);
-                    break;
-                case 'switch':
-                    $value
-                        ? $entity->cf($name)->enable()
-                        : $entity->cf($name)->disable();
-                    break;
-                default:
-                    $entity->cf($name)->reset();
-                    $entity->cf($name)->setValue($value);
-            }
-            return true;
+        if (empty($name)) {
+            throw new Exception("Argument 'name' can`t be empty.");
         }
-        throw new \Exception("Wrong params");
+        if (empty($value)) {
+            throw new Exception("Argument 'value' can`t be empty.");
+        }
+        if (!$entity->cf($name)) {
+            throw new Exception("Wrong name of field.");
+        }
+        switch ($type) {
+            case 'date':
+                $entity->cf($name)->setDate($value);
+                break;
+            case 'switch':
+                $value
+                    ? $entity->cf($name)->enable()
+                    : $entity->cf($name)->disable();
+                break;
+            default:
+                $entity->cf($name)->reset();
+                $entity->cf($name)->setValue($value);
+        }
+        return true;
     }
 
 }
